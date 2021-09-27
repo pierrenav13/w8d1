@@ -17,17 +17,18 @@ class ControllerBase
   def already_built_response?
     unless @already_built_response == true
       @already_built_response = true
-      @already_built_response
+      return false
     else
-      raise 'double render'
+      return true
     end
   end
 
   # Set the response status code and header
   def redirect_to(url)
+    raise 'double render error' if already_built_response?
     @res.status = 302
     @res['Location'] = url
-    already_built_response?
+    
     
     nil
   end
@@ -36,9 +37,10 @@ class ControllerBase
   # Set the response's content type to the given type.
   # Raise an error if the developer tries to double render.
   def render_content(content, content_type)
+    raise 'double render error' if already_built_response?
     @res["Content-Type"] = content_type
     @res.write(content)
-    already_built_response?
+
     nil
   end
     
