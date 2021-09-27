@@ -10,30 +10,36 @@ class ControllerBase
   def initialize(req, res)
     @req = req
     @res = res
+    @already_built_response = false
   end
 
   # Helper method to alias @already_built_response
   def already_built_response?
+    unless @already_built_response == true
+      @already_built_response = true
+      @already_built_response
+    else
+      raise 'double render'
+    end
   end
 
   # Set the response status code and header
   def redirect_to(url)
     @res.status = 302
-    @res.header = url
-    @already_built_response = res
+    @res['Location'] = url
+    already_built_response?
+    
+    nil
   end
 
   # Populate the response with content.
   # Set the response's content type to the given type.
   # Raise an error if the developer tries to double render.
   def render_content(content, content_type)
-    @res.content_type = content_type
-    @res.body = content
-    if @already_built_response.nil?
-      @already_built_response = res
-    else
-      raise 'double render' if @already_built_response == res
-    end
+    @res["Content-Type"] = content_type
+    @res.write(content)
+    already_built_response?
+    nil
   end
     
 
